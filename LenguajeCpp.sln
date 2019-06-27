@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Setjmp + Goto = Error Handling Bliss", "Setjmp + Goto = Error Handling Bliss\Setjmp + Goto = Error Handling Bliss.vcxproj", "{1BF08058-94D0-49F4-96DF-D82A768EF03B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Reflection", "Reflection\Reflection.vcxproj", "{B844AC21-91AF-4AF4-897D-4D3FA0498F4A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -116,6 +118,18 @@ Global
 		{1BF08058-94D0-49F4-96DF-D82A768EF03B}.Release|x64.Build.0 = Release|x64
 		{1BF08058-94D0-49F4-96DF-D82A768EF03B}.Release|x86.ActiveCfg = Release|Win32
 		{1BF08058-94D0-49F4-96DF-D82A768EF03B}.Release|x86.Build.0 = Release|Win32
+		{B844AC21-91AF-4AF4-897D-4D3FA0498F4A}.Debug|ARM.ActiveCfg = Debug|Win32
+		{B844AC21-91AF-4AF4-897D-4D3FA0498F4A}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{B844AC21-91AF-4AF4-897D-4D3FA0498F4A}.Debug|x64.ActiveCfg = Debug|x64
+		{B844AC21-91AF-4AF4-897D-4D3FA0498F4A}.Debug|x64.Build.0 = Debug|x64
+		{B844AC21-91AF-4AF4-897D-4D3FA0498F4A}.Debug|x86.ActiveCfg = Debug|Win32
+		{B844AC21-91AF-4AF4-897D-4D3FA0498F4A}.Debug|x86.Build.0 = Debug|Win32
+		{B844AC21-91AF-4AF4-897D-4D3FA0498F4A}.Release|ARM.ActiveCfg = Release|Win32
+		{B844AC21-91AF-4AF4-897D-4D3FA0498F4A}.Release|ARM64.ActiveCfg = Release|Win32
+		{B844AC21-91AF-4AF4-897D-4D3FA0498F4A}.Release|x64.ActiveCfg = Release|x64
+		{B844AC21-91AF-4AF4-897D-4D3FA0498F4A}.Release|x64.Build.0 = Release|x64
+		{B844AC21-91AF-4AF4-897D-4D3FA0498F4A}.Release|x86.ActiveCfg = Release|Win32
+		{B844AC21-91AF-4AF4-897D-4D3FA0498F4A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
