@@ -170,6 +170,7 @@ namespace Reflexion
     using TypeIntrospectionInCpp::_4::TraitsFunctions::FunctionArgumentsType;
     using TypeIntrospectionInCpp::_4::TraitsFunctions::FunctionResultType;
     using TypeIntrospectionInCpp::_4::TraitsFunctions::NthArgumentType;
+    using TypeIntrospectionInCpp::_4::TraitsFunctions::FunctionTraits;
     using TypeIntrospectionInCpp::_4::TraitsFunctions::ArgumentsCount;
 }
 
@@ -309,3 +310,121 @@ namespace Reflexion::Reification::_2::ReflectionAndReification
     }
 }
 
+namespace Reflexion::GenericLambdas::_1::MagicCallImplementation
+{
+    auto LambdaArgTypeTest() -> void
+    {
+        auto Lambda = [](auto){ };
+        //auto FunctionType = &decltype(Lambda)::operator(); // Error
+        auto FunctionType = &decltype(Lambda)::operator()<int>;
+    }
+
+    // Default case, the lambda cannot be instantiated, yields false
+    template<typename, typename, typename = void>
+    constexpr bool IsCallOperatorInstantiable = false;
+
+    // Specialization if the expression `&L::template operator()<Args...>` is valid, yields true
+    template<typename TLambda, typename ...TArgs>
+    constexpr bool IsCallOperatorInstantiable<
+        TLambda, std::tuple<TArgs...>,
+        std::void_t<decltype(&TLambda::template operator()<TArgs...>)>
+    > = true;
+
+    // Declaration of our function. Must be declared to provide specializations.
+    template<typename, typename, typename = void>
+    struct DeducedFunctionTraitsHelper;
+
+    // This specialization matches the first path of the pseudocode,
+    // more presicely the condition `if TFunc instantiable with TArgs... then`
+    template<typename TFunc, typename ...TArgs>
+    struct DeducedFunctionTraitsHelper<TFunc, std::tuple<TArgs...>,
+        // arguments TFunc and TArgs if TFunc is instantiable with TArgs
+        std::enable_if_t<IsCallOperatorInstantiable<TFunc, std::tuple<TArgs...>>>>
+        // return function_traits with function pointer
+        // Returning is modelized as inheritance. We inherit (returning) the function trait with the deduced pointer to member.
+        : FunctionTraits<decltype(&TFunc::template operator()<TArgs...>)>
+    {
+    };
+
+    // This specialisation matches the second path of the pseudocode,
+    // the `else if size of TArgs larger than 0`
+    template<typename TFunc, typename TFirst, typename ...TArgs>
+    struct DeducedFunctionTraitsHelper<TFunc, 
+        std::tuple<TFirst, TArgs...>, // arguments TFunc and TFirst, TArgs... if not instantiable
+        std::enable_if_t<!IsCallOperatorInstantiable<TFunc, std::tuple<TFirst, TArgs...>>>
+    >   // return deduced_function_traits(TFunc, drop first TFirst...)
+        // again, returning is modelized as inheritance. We are returning the next step of the algorithm (recursion)
+        : DeducedFunctionTraitsHelper<TFunc, std::tuple<TArgs...>>
+    {
+    };
+
+    // Third path of the algorithm.
+    // Else return nothing, end of algorithm
+    template<typename, typename, typename>
+    struct DeducedFunctionTraitsHelper { };
+
+    // We can also define some alias to ease it’s usage
+    template<typename TFunc, typename ...TArgs>
+    using DeducedFunctionTriats = DeducedFunctionTraitsHelper<TFunc, std::tuple<TArgs...>>;
+
+    template<typename TFunc, typename ...TArgs>
+    using DeducedFunctionResultType = typename DeducedFunctionTriats<TFunc, TArgs...>::ResultType;
+
+    template<typename TFunc, typename ...TArgs>
+    using DeducedFunctionArgumentType = typename DeducedFunctionTriats<TFunc, TArgs...>::ParameterTypes;
+
+    template<std::size_t N, typename TFunc, typename ...TArgs>
+    using DeducedNthArgumentType = std::tuple_element_t<N, DeducedFunctionArgumentType<TFunc, TArgs...>>;
+
+    template<typename TFunc, typename ...TArgs>
+    constexpr auto DeducedArgumentsCount = std::tuple_size_v<DeducedFunctionArgumentType<TFunc, TArgs...>>;
+    
+    // MagicCall
+
+    template<typename Type>
+    constexpr Type MagicValue()
+    {
+        return Type{ }; // Simple implementation that default construct the type
+    }
+
+    // We could have used decltype(auto) instead of reflection here ------v
+    template<typename TLambda, typename ...TArgs, std::size_t ...S>
+    constexpr auto MagicCall(std::index_sequence<S...>, TLambda Lambda, TArgs&& ...Args) -> DeducedFunctionResultType<TLambda, TArgs...>
+    {
+        // Call the lambda with both MagicValue and provided parameter in ...Args 
+        return Lambda(MagicValue<DeducedNthArgumentType<S, TLambda, TArgs...>>()..., std::forward<TArgs>(Args)...);
+    }
+
+    template<typename TLambda, typename ...TArgs>
+    constexpr auto MagicCall(TLambda Lambda, TArgs&& ...Args) -> DeducedFunctionResultType<TLambda, TArgs...>
+    {
+        // We generate a sequence from 0 up to the number of parameter we need to get through `MagicValue`
+        auto Sequence = std::make_index_sequence<DeducedArgumentsCount<TLambda, TArgs...> - sizeof...(Args)>();
+        return MagicCall(Sequence, std::move(Lambda), std::forward<TArgs>(Args)...);
+    }
+
+    template<size_t TypeId>
+    struct SomeType
+    {
+        friend std::ostream& operator<<(std::ostream& Os, SomeType<TypeId> const&)
+        {
+            return Os << typeid(SomeType<TypeId>).name();
+        }
+    };
+
+    void Run()
+    {
+        // LambdaArgTypeTest();
+        
+        using namespace std::literals;
+
+#define Variable(Var) << #Var ": " << Var << std::endl
+
+        MagicCall([](SomeType<1> S1, SomeType<2> S2, int N1, double N2, auto&& V1, auto&& V2)
+            {
+                std::cout Variable(S1) Variable(S2) Variable(N1) Variable(N2) Variable(V1) Variable(V2);
+            }, /*Magic*/ /*Magic*/ 4, 5.4, "Str1", "Str2"sv);
+
+#undef Variable
+    }
+}

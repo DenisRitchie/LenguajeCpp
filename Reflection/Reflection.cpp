@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <type_traits>
 #include <optional>
@@ -16,6 +17,7 @@ int main()
     // Reflexion::TypeIntrospectionInCpp::_4::TraitsFunctions::Run();
     // Reflexion::TypeIntrospectionInCpp::_5::UsingFunctionReflection::Run();
     // Reflexion::Reification::_1::Run();
-    Reflexion::Reification::_2::ReflectionAndReification::Run();
+    // Reflexion::Reification::_2::ReflectionAndReification::Run();
+    Reflexion::GenericLambdas::_1::MagicCallImplementation::Run();
     return _getch();
 }
